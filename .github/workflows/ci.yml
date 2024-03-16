@@ -40,5 +40,3 @@ jobs:
     - name: Run migrations
       run: make migrateup
 
-    - name: Run migrations
-      run: make migrateup
