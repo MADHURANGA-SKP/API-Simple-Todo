@@ -87,6 +87,7 @@ func (store *Store) DeleteTodo(ctx context.Context, id int64) error {
 
 //UpdateteTodoTxParams contains the input parameters of the Updating of the data 
 type UpdateTodosParams struct{
+	ID       int64  `json:"id"`
 	Title    string      `json:"title"`
 	Time     string      `json:"time"`
 	Date     string      `json:"date"`

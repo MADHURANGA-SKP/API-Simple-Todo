@@ -7,6 +7,7 @@ import (
 	"net/http"
 	db "simpletodo/db/sqlc"
 	"simpletodo/token"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -104,7 +105,20 @@ func (server *Server) UpdateTodo(ctx *gin.Context){
 		return
 	}
 
-	arg := db.UpdateTodosParams{}
+	arg := db.UpdateTodosParams{
+        Title:    req.Title,
+        Time:     req.Time,
+        Date:     req.Date,
+        Complete: req.Complete,
+    }
+
+	todoID, err := strconv.Atoi(ctx.Param("id"))
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, errorResponse(err))
+        return
+    }
+	
+    arg.ID = int64(todoID)
 
 	Todo, err := server.store.UpdateTodo(ctx, arg)
 	if err != nil {
