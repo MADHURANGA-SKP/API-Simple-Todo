@@ -1,11 +1,12 @@
 -- name: CreateTodo :one
 INSERT INTO todo (
+    account_id,
     title,
     time,
     date,
     complete
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetTodo :one

@@ -41,6 +41,8 @@ func (server *Server) setupRouter(){
 	router.POST("/account/create", server.CreateAccount)
 	router.POST("/account/login", server.LoginAccount)
 	router.GET("/account/get/:id", server.GetAccount)
+	router.POST("/tokens/renew_access", server.renewAccessToken)
+	
 	// router.PUT("/account/update/:id", server.UpdateAccount)
 	// router.GET("/account/list", server.listAccounts)
 
@@ -51,6 +53,7 @@ func (server *Server) setupRouter(){
 	authRoutes.PUT("/todo/update/:id", server.UpdateTodo)
 	authRoutes.DELETE("/todo/delete/:id", server.DeleteTodo)
 	authRoutes.GET("/todo/get/:id", server.GetTodo)
+	authRoutes.GET("/todos/get", server.ListTodo)
 	server.router = router
 }
 
