@@ -2,11 +2,9 @@ package api
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"net/http"
 	db "simpletodo/db/sqlc"
-	"simpletodo/token"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -14,11 +12,11 @@ import (
 
 //createTodoRequest contains the input parameters for create an Todo
 type createTodoRequest struct{
-	Username string `json:"username"`
-	Title    string      `json:"title"`
-	Time     string      `json:"time"`
-	Date     string      `json:"date"`
-	Complete string `json:"complete"`
+	AccountID int64  `json:"account_id"`
+	Title     string `json:"title"`
+	Time      string `json:"time"`
+	Date      string `json:"date"`
+	Complete  string `json:"complete"`
 }
 
 func (server *Server) CreateTodo(ctx *gin.Context){
@@ -28,25 +26,9 @@ func (server *Server) CreateTodo(ctx *gin.Context){
 		return
 	}
 
-	authPayload, ok := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-
-	if !ok {
-        err := errors.New("authorization payload is invalid")
-        ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-        return
-    }
-
-    if req.Username != authPayload.Username {
-        err := errors.New("account doesn't belong to the authenticated user")
-        ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-        return
-    }
-
-    _, valid := server.validTodo(ctx, req.Username)
-    if !valid {
-        return
-    }
+   
 	arg := db.CreateTodosParams{
+        AccountID: req.AccountID,
 		Title: req.Title,
 		Time: req.Time,
 		Date: req.Date,
@@ -73,6 +55,8 @@ func (server *Server) GetTodo(ctx *gin.Context){
 		return
 	}
 
+	
+
 	arg := db.GetTodoParams{AccountID: req.AccountID}
 
 	account, err := server.store.GetTodo(ctx, arg)
@@ -84,7 +68,6 @@ func (server *Server) GetTodo(ctx *gin.Context){
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -100,25 +83,25 @@ type UpdateTodosRequest struct {
 
 func (server *Server) UpdateTodo(ctx *gin.Context){
 	var req UpdateTodosRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	arg := db.UpdateTodosParams{
-        Title:    req.Title,
-        Time:     req.Time,
-        Date:     req.Date,
-        Complete: req.Complete,
-    }
 
 	todoID, err := strconv.Atoi(ctx.Param("id"))
     if err != nil {
         ctx.JSON(http.StatusBadRequest, errorResponse(err))
         return
     }
+
 	
-    arg.ID = int64(todoID)
+	arg := db.UpdateTodosParams{
+		ID : int64(todoID),
+        Title:    req.Title,
+        Time:     req.Time,
+        Date:     req.Date,
+        Complete: req.Complete,
+    }
 
 	Todo, err := server.store.UpdateTodo(ctx, arg)
 	if err != nil {
@@ -167,6 +150,7 @@ func (server *Server) ListTodo(ctx *gin.Context) {
         ctx.JSON(http.StatusBadRequest, errorResponse(err))
         return
     }
+
 
     arg := db.ListTodoParams{
         Limit:  req.PageSize,

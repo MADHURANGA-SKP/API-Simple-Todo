@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"net/http"
 
@@ -12,6 +13,7 @@ import (
 	util "simpletodo/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // createAccountRequest contains the input parameters for create an account in account table
@@ -19,14 +21,15 @@ type createAccountRequest struct{
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
 	Password  string `json:"password" binding:"required"`
-	UserName  string `json:"user_name" binding:"required,alphanum"`
+	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
 }
 
 type AccountResult struct{
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
-	UserName  string `json:"user_name" binding:"required,alphanum"`
 	Password  string `json:"password" binding:"required"`
+	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
+	
 }
 
 
@@ -150,11 +153,15 @@ func (server *Server) GetAccount(ctx *gin.Context){
 
 type loginAccountRequest struct {
     UserName string `json:"user_name" binding:"required,alphanum"`
-    Password  string `json:"password" binding:"required"`
+    Password  string `json:"password" validate:"required min=6"`
 }
 
 type loginAccountResult struct {
+	SessionID	uuid.UUID `json:"session_id"`
     AccessToken string       `json:"access_token"`
+	AccesssTokenExpiresAt time.Time `json:"access_token_expires_at"`
+	RefreshToken string `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
 	Account AccountResult `json:"account"`
 }
 
@@ -163,6 +170,7 @@ type loginAccountResult struct {
 
 func (server *Server) LoginAccount (ctx *gin.Context){
 	var req loginAccountRequest
+	
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -185,7 +193,7 @@ func (server *Server) LoginAccount (ctx *gin.Context){
 		return
 	}
 
-	accessToken, _, err := server.tokenMaker.CreateToken(
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		account.Account.UserName, 
 		req.Password,
 		server.config.AccessTokenDuration,
@@ -196,10 +204,38 @@ func (server *Server) LoginAccount (ctx *gin.Context){
 		return
 	}
 
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+		account.Account.UserName, 
+		req.Password,
+		server.config.RefreshTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:     refreshPayload.ID,     
+		AccountID: account.Account.ID,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	rsp := loginAccountResult{
+		SessionID: session.ID,
 		AccessToken: accessToken,
+		AccesssTokenExpiresAt: accessPayload.ExpiredAt,
+		RefreshToken: refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
 		Account: newAccountResult(account.Account),
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
-}
+} 

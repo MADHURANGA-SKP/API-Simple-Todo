@@ -41,10 +41,11 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error{
 //CreateTodo give access to the API caling to perfrom deletion in the databse 
 //CreateTodoTxParams contains the input parameters of the Createing of the data 
 type CreateTodosParams struct{
-	Title    string      `json:"title"`
-	Time     string      `json:"time"`
-	Date     string      `json:"date"`
-	Complete string `json:"complete"`
+	AccountID int64  `json:"account_id"`
+	Title     string `json:"title"`
+	Time      string `json:"time"`
+	Date      string `json:"date"`
+	Complete  string `json:"complete"`
 }
 
 
@@ -63,6 +64,7 @@ func (store *Store) CreateTodo(ctx context.Context, arg CreateTodosParams)(Creat
 		var err error
 
 		result.Todo, err = q.CreateTodo(ctx, CreateTodoParams{
+			AccountID: arg.AccountID,
 			Title: 		arg.Title,
 			Time: 		arg.Time,
 			Date: 		arg.Date,
@@ -108,7 +110,8 @@ func (store *Store) UpdateTodo(ctx context.Context, arg UpdateTodosParams)(Updat
 
 	err := store.execTx(ctx, func(q *Queries) error{
 		var err error
-		result.Todo, err = q.UpdateTodo(ctx, UpdateTodoParams{
+		updateTodo, err := q.UpdateTodo(ctx, UpdateTodoParams{
+			ID: arg.ID,
 			Title: 		arg.Title,
 			Time: 		arg.Time,
 			Date: 		arg.Date,
@@ -118,7 +121,12 @@ func (store *Store) UpdateTodo(ctx context.Context, arg UpdateTodosParams)(Updat
 		if err != nil {
 			return err
 		}
+
+		if updateTodo.ID == 0 {
+			return err
+		}
 		
+		result.Todo = updateTodo
 		return nil
 	})
 	return result, err
@@ -132,7 +140,7 @@ func (store *Store) ListTodo(ctx context.Context, params ListTodoParams) ([]Todo
 
 //GetTodoParams contains the input parameters of the Geting of the data 
 type GetTodoParams struct{
-	AccountID int64 `uri:"id"`
+	AccountID int64 `uri:"id" binding:"required,min=1"`
 }
 
 //GetTodoResult contains the result of the Geting of the data
@@ -160,7 +168,6 @@ func (store *Store) GetTodo(ctx context.Context, arg GetTodoParams)(GetTodoResul
 	return result, err
 }
 
-
 //CreateAccountTxParams contains the input parameters of the Createing of the data 
 type CreateAccountsParams struct{
 	FirstName string `json:"first_name"`
@@ -173,7 +180,6 @@ type CreateAccountsParams struct{
 type CreateAccountResult struct{
 	Account Account `json:"account"`
 }
-
 
 //CreateAccount perfrom data transfer
 //it contains title, time, date, completion of the todo event with the database storation

@@ -5,9 +5,12 @@ import (
 	"log"
 	"simpletodo/api"
 	db "simpletodo/db/sqlc"
+	"time"
 
 	util "simpletodo/util"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
 
@@ -16,6 +19,17 @@ const (
 )
 
 func main (){
+	router := gin.Default()
+
+    router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"http://*", "https://*", "*", "https://testnet.bethelnet.io"},
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowHeaders:     []string{"*"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        MaxAge:           12 * time.Hour,
+    }))
+
 	config, err := util.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)

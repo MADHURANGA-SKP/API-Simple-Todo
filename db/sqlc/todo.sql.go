@@ -11,24 +11,27 @@ import (
 
 const createTodo = `-- name: CreateTodo :one
 INSERT INTO todo (
+    account_id,
     title,
     time,
     date,
     complete
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3, $4, $5
 ) RETURNING id, account_id, title, time, date, complete
 `
 
 type CreateTodoParams struct {
-	Title    string `json:"title"`
-	Time     string `json:"time"`
-	Date     string `json:"date"`
-	Complete string `json:"complete"`
+	AccountID int64  `json:"account_id"`
+	Title     string `json:"title"`
+	Time      string `json:"time"`
+	Date      string `json:"date"`
+	Complete  string `json:"complete"`
 }
 
 func (q *Queries) CreateTodo(ctx context.Context, arg CreateTodoParams) (Todo, error) {
 	row := q.db.QueryRowContext(ctx, createTodo,
+		arg.AccountID,
 		arg.Title,
 		arg.Time,
 		arg.Date,
