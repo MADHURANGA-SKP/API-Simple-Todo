@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package pb;
+
+import "account.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "simpletodo/pb";
+
+message LoginAccountRequest  {
+    string UserName = 1;
+    string Password = 2;
+} 
+
+message LoginAccountResult {
+    Account account = 1;
+    string session_id = 2;
+    string access_token = 3;
+    string refresh_token = 4;
+    google.protobuf.Timestamp access_token_expires_at = 5;
+    google.protobuf.Timestamp refresh_token_expires_at = 6;
+}

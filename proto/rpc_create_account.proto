@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+import "account.proto";
+
+option go_package = "simpletodo/pb";
+
+message CreateAccountRequest  {
+    string FirstName = 1;
+    string LastName = 2;
+    string UserName = 3;
+    string Password = 4;
+} 
+
+message CreateAccountResult {
+    Account account = 1;
+}
