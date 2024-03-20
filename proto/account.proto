@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "simpletodo/pb";
+
+message Account  {
+    string FirstName = 1;
+    string LastName = 2;
+    string UserName = 3;
+    string Password = 4;
+} 
