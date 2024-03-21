@@ -20,15 +20,15 @@ import (
 type createAccountRequest struct{
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
-	Password  string `json:"password" binding:"required"`
 	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
+	Password  string `json:"password" binding:"required"`
 }
 
 type AccountResult struct{
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
-	Password  string `json:"password" binding:"required"`
 	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
+	Password  string `json:"password" binding:"required"`
 	
 }
 
@@ -48,23 +48,6 @@ func (server *Server) CreateAccount(ctx *gin.Context){
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	// // Check if authorization payload exists in the context
-    // authPayload, exists := ctx.Get(authorizationPayloadKey)
-    // if !exists {
-    //     err := errors.New("authorization payload is missing")
-    //     ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-    //     return
-    // }
-
-    // // Assert the authorization payload to the correct type
-    // payload, ok := authPayload.(*token.Payload)
-    // if !ok {
-    //     err := errors.New("authorization payload is invalid")
-    //     ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-    //     return
-    // }
-
 
 	hashPassword, err := util.HashPassword(req.Password)
 	if err != nil {
@@ -153,7 +136,7 @@ func (server *Server) GetAccount(ctx *gin.Context){
 
 type loginAccountRequest struct {
     UserName string `json:"user_name" binding:"required,alphanum"`
-    Password  string `json:"password" validate:"required min=6"`
+    Password  string `json:"password" validate:"required min=8"`
 }
 
 type loginAccountResult struct {
