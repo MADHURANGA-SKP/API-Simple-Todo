@@ -170,10 +170,10 @@ func (store *Store) GetTodo(ctx context.Context, arg GetTodoParams)(GetTodoResul
 
 //CreateAccountTxParams contains the input parameters of the Createing of the data 
 type CreateAccountsParams struct{
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	UserName  string `json:"user_name"`
-	Password  string `json:"password"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
+	Password  string `json:"password" binding:"required"`
 }
 
 //CreateAccountResult contains the result of the Createing of the data
@@ -209,7 +209,7 @@ func (store *Store) CreateAccount(ctx context.Context, arg CreateAccountsParams)
 
 //GetAccountTxParams contains the input parameters of the Geting of the data 
 type GetAccountsParams struct{
-	UserName  string `json:"user_name"`
+	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
 	Password  string `json:"password" binding:"required"`
 }
 
@@ -251,10 +251,10 @@ func (store *Store) ListAccount(ctx context.Context, params ListAccountParams) (
 
 //UpdateAccountTxParams contains the input parameters of the Updating of the data 
 type UpdateAccountsParams struct{
-	FirstName string `json:"first_name"`
-    LastName  string `json:"last_name"`
-    UserName  string `json:"user_name"`
-    Password  string `json:"password"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
+	Password  string `json:"password" binding:"required"`
 }
 
 //UpdateTodoResult contains the result of the Updating of the data
