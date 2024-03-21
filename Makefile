@@ -4,26 +4,30 @@ postgres:
 createdb:
 	docker exec -it simpletodo createdb --username=pasan --owner=pasan simpletodo
 
-create_migrations_up_down:
-	migrate create -ext sql -dir db/migrations -seq init_mg
+create_migration_up_down:
+	migrate create -ext sql -dir db/migration -seq init_mg
 
 dropdb:
 	docker exec -it simpletodo dropdb --username=pasan simpletodo
 
 migrateup:
-	migrate -path db/migrations -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up
+	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up
 
-migrateup1:
-	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up" -verbose up 1
 
 migratedown:
 	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up" -verbose down
 
-migratedown1:
-	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up" -verbose down 1
 
 new_migration: 
 	migrate create -ext sql -dir db/migration -seq simpletodo
+
+migrateup:
+	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up
+
+
+migratedown:
+	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up" -verbose down
+
 
 db_docs:
 	dbdocs build doc/db.dbml
@@ -43,4 +47,4 @@ proto:
     --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
     proto/*.proto
 
-.PHONY: postgres createdb migrations dropdb migrateup migratedown sqlc test proto
+.PHONY: postgres createdb migration dropdb migrateup migratedown sqlc test proto
