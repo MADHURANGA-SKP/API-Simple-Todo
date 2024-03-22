@@ -20,6 +20,7 @@ import (
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 const (
@@ -85,16 +86,16 @@ func runGatwayServer(config util.Config, store db.Store){
 		log.Fatal("cannont create server:", err)
 	}
 
-	// jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-	// 	MarshalOptions: protojson.MarshalOptions{
-	// 		UseProtoNames: true,
-	// 	},
-	// 	UnmarshalOptions: protojson.UnmarshalOptions{
-	// 		DiscardUnknown: true,
-	// 	},
-	// })jsonOption
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
 
-	grpcMux := runtime.NewServeMux()
+	grpcMux := runtime.NewServeMux(jsonOption)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
