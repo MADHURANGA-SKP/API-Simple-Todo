@@ -5,9 +5,21 @@ package pb;
 import "google/api/annotations.proto";
 import "rpc_create_account.proto";
 import "rpc_login_account.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "simpletodo/pb";
 
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Simple Todo Api";
+    version: "1.0";
+    contact: {
+      name: "Todo Api of Go lang implementation";
+      url: "https://github.com/MADHURANGA-SKP/API---Simple-Todo";
+      email: "pasanmadhuranga@gmail.com";
+    };
+  };
+};
 
 service Simpletodo {
     rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResult) {
