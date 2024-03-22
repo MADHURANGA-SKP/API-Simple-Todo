@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package pb;
 
+import "google/api/annotations.proto";
 import "rpc_create_account.proto";
 import "rpc_login_account.proto";
 
@@ -9,6 +10,16 @@ option go_package = "simpletodo/pb";
 
 
 service Simpletodo {
-    rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResult) {}
-    rpc LoginAccount (LoginAccountRequest) returns (LoginAccountResult) {}
+    rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResult) {
+        option (google.api.http) = {
+            post: "/v1/create_account"
+            body: "*"
+        };
+    }
+    rpc LoginAccount (LoginAccountRequest) returns (LoginAccountResult) {
+        option (google.api.http) = {
+            post: "/v1/login_account"
+            body: "*"
+        };
+    }
 }

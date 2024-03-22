@@ -7,10 +7,10 @@ import "account.proto";
 option go_package = "simpletodo/pb";
 
 message CreateAccountRequest  {
-    string FirstName = 1;
-    string LastName = 2;
-    string UserName = 3;
-    string Password = 4;
+    string first_name = 1;
+    string last_name = 2;
+    string user_name = 3;
+    string password = 4;
 } 
 
 message CreateAccountResult {

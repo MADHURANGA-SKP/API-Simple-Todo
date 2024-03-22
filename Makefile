@@ -21,14 +21,6 @@ migratedown:
 new_migration: 
 	migrate create -ext sql -dir db/migration -seq simpletodo
 
-migrateup:
-	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up
-
-
-migratedown:
-	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up" -verbose down
-
-
 db_docs:
 	dbdocs build doc/db.dbml
 
@@ -42,9 +34,12 @@ test:
 	go test -v -cover ./...
 
 proto:
-	rm -f pb/*.go
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
     --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
     proto/*.proto
 
-.PHONY: postgres createdb migration dropdb migrateup migratedown sqlc test proto
+rm_proto:
+	rm -f pb/*.go
+
+.PHONY: postgres createdb create_migration_up_down dropdb migrateup migratedown db_docs db_schema sqlc test proto rm_proto

@@ -1,16 +1,19 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net"
+	"net/http"
 	"simpletodo/api"
 	db "simpletodo/db/sqlc"
 	"simpletodo/gapi"
 	"simpletodo/pb"
+	util "simpletodo/util"
 	"time"
 
-	util "simpletodo/util"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -46,6 +49,9 @@ func main (){
 	}
 
 	store := db.NewStore(conn)
+	 
+	
+	go runGatwayServer(config, *store)
 	runGrpcServer(config, *store)
 	// runGinServer(config, *store)
 
@@ -63,13 +69,53 @@ func runGrpcServer(config util.Config, store db.Store){
 
 	listener, err := net.Listen("tcp", config.GRPCServerAddress)
 	if err != nil {
-		log.Fatal("cannot create listener")
+		log.Fatal("cannot create listener",err)
 	}
 
 	log.Printf("Start gRPC server at %s", listener.Addr().String())
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatal("cannot start grpc server")
+		log.Fatal("cannot start grpc server",err)
+	}
+}
+
+func runGatwayServer(config util.Config, store db.Store){
+	server, err := gapi.NewServer(config,store)
+	if err != nil {
+		log.Fatal("cannont create server:", err)
+	}
+
+	// jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+	// 	MarshalOptions: protojson.MarshalOptions{
+	// 		UseProtoNames: true,
+	// 	},
+	// 	UnmarshalOptions: protojson.UnmarshalOptions{
+	// 		DiscardUnknown: true,
+	// 	},
+	// })jsonOption
+
+	grpcMux := runtime.NewServeMux()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err = pb.RegisterSimpletodoHandlerServer(ctx, grpcMux, server)
+	if err != nil {
+		log.Fatal("cannot registerhandler server:",err)
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+
+	listener, err := net.Listen("tcp", config.HTTPServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener:",err)
+	}
+
+	log.Printf("Start http gateway server at %s", listener.Addr().String())
+	err = http.Serve(listener, mux)
+	if err != nil {
+		log.Fatal("cannot start http gateway server:",err)
 	}
 }
 
