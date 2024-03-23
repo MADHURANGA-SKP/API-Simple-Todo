@@ -6,17 +6,24 @@ import (
 	db "simpletodo/db/sqlc"
 	"simpletodo/pb"
 	util "simpletodo/util"
+	"simpletodo/val"
 
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (server *Server) LoginAccount(ctx context.Context, req *pb.LoginAccountRequest) (*pb.LoginAccountResult, error) {
+	violations := validateLoginUserRequest(req)
+	if violations != nil {
+		return nil, invalidArgumentError(violations)
+	}
+	
 	account , err := server.store.GetAccount(ctx, db.GetAccountsParams{UserName: req.GetUserName()})
 	if err != nil {
 		if err == sql.ErrNoRows{
-			return nil, status.Errorf(codes.NotFound, "user not found")
+			return nil, status.Errorf(codes.NotFound, "user not found", err)
 		}
 		return nil, status.Errorf(codes.Internal, "failed to found user")
 	}
@@ -72,4 +79,16 @@ func (server *Server) LoginAccount(ctx context.Context, req *pb.LoginAccountRequ
 		RefreshTokenExpiresAt: timestamppb.New(refreshPayload.ExpiredAt),
 	}
 	return rsp, nil
+}
+
+func validateLoginUserRequest(req *pb.LoginAccountRequest) (violations []*errdetails.BadRequest_FieldViolation){
+	if err := val.ValidateUsername(req.GetUserName()); err != nil {
+		 violations = append(violations, fieldViolation("user_name", err))
+	}
+
+	if err := val.ValidatePassword(req.GetPassword()); err != nil {
+		violations = append(violations, fieldViolation("password", err))
+   	}
+
+	return violations
 }
