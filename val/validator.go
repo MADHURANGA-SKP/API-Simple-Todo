@@ -7,8 +7,8 @@ import (
 
 var (
 	isValidUsername = regexp.MustCompile(`^[a-z0-9_]+$`).MatchString
-	isValidFirstName = regexp.MustCompile(`^[a-z0-9_]+$`).MatchString
-	isValidLastname = regexp.MustCompile(`^[a-z0-9_]+$`).MatchString
+	isValidFirstName = regexp.MustCompile(`^[a-zA-Z\\s]+$`).MatchString
+	isValidLastname = regexp.MustCompile(`^[a-zA-Z\\s]+$`).MatchString
 )
 
 func ValidateString(value string, minLength int, maxLength int ) error {
@@ -24,7 +24,7 @@ func ValidateFirstname(value string) error {
 		return err
 	}
 	if !isValidFirstName(value) {
-		 return fmt.Errorf("must contain only lettersor spaces")
+		 return fmt.Errorf("must contain only letters or spaces")
 	}
 	return nil
 }
@@ -34,7 +34,7 @@ func ValidateLastname(value string) error {
 		return err
 	}
 	if !isValidLastname(value) {
-		 return fmt.Errorf("must contain only lettersor spaces")
+		 return fmt.Errorf("must contain only letters or spaces")
 	}
 	return nil
 }

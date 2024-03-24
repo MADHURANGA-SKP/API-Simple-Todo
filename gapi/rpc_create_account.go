@@ -13,7 +13,7 @@ import (
 )
 
 func (server *Server) CreateAccount(ctx context.Context,req *pb.CreateAccountRequest) (*pb.CreateAccountResult, error) {
-	violations := validateCreateUserResuest(req)
+	violations := validateCreateUserRequest(req)
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
 	}
@@ -44,7 +44,7 @@ func (server *Server) CreateAccount(ctx context.Context,req *pb.CreateAccountReq
 
 }
 
-func validateCreateUserResuest(req *pb.CreateAccountRequest) (violations []*errdetails.BadRequest_FieldViolation){
+func validateCreateUserRequest(req *pb.CreateAccountRequest) (violations []*errdetails.BadRequest_FieldViolation){
 	if err := val.ValidateFirstname(req.GetFirstName()); err != nil {
 		violations = append(violations, fieldViolation("first_name", err))
   	}

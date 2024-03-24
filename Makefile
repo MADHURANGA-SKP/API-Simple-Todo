@@ -46,4 +46,7 @@ proto:
 rm_proto:
 	rm -f pb/*.go
 
-.PHONY: postgres createdb create_migration_up_down dropdb migrateup migratedown db_docs db_schema sqlc test proto rm_proto
+server:
+	go run main.go
+
+.PHONY: postgres createdb create_migration_up_down dropdb migrateup migratedown db_docs db_schema sqlc test proto rm_proto server

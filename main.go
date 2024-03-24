@@ -14,12 +14,14 @@ import (
 	util "simpletodo/util"
 	"time"
 
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/rakyll/statik/fs"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
+	"github.com/rakyll/statik/fs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -51,6 +53,8 @@ func main (){
 		log.Fatal("cannot start server", err)
 	}
 
+	runDBMigeations(config.MigrationURL, config.DBSource)
+
 	store := db.NewStore(conn)
 	 
 	
@@ -60,6 +64,19 @@ func main (){
 
 }
 
+func runDBMigeations(migrationURL string, dbSource string){
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil { 
+		log.Fatal("cannot create ne migrate instance:", err)
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange{
+		log.Fatal("failed to run migrate up:", err)
+	} 
+
+	log.Println("db migrated succesfully")
+}
+ 
 func runGrpcServer(config util.Config, store db.Store){
 	server, err := gapi.NewServer(config,store)
 	if err != nil {
@@ -81,6 +98,9 @@ func runGrpcServer(config util.Config, store db.Store){
 		log.Fatal("cannot start grpc server",err)
 	}
 }
+
+
+
 
 func runGatwayServer(config util.Config, store db.Store){
 	server, err := gapi.NewServer(config,store)
