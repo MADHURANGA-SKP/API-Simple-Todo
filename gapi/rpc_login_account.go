@@ -23,7 +23,7 @@ func (server *Server) LoginAccount(ctx context.Context, req *pb.LoginAccountRequ
 	account , err := server.store.GetAccount(ctx, db.GetAccountsParams{UserName: req.GetUserName()})
 	if err != nil {
 		if err == sql.ErrNoRows{
-			return nil, status.Errorf(codes.NotFound, "user not found", err)
+			return nil, status.Errorf(codes.NotFound, "user not found")
 		}
 		return nil, status.Errorf(codes.Internal, "failed to found user")
 	}
