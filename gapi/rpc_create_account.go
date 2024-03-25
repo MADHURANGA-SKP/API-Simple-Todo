@@ -24,9 +24,10 @@ func (server *Server) CreateAccount(ctx context.Context,req *pb.CreateAccountReq
 	}
 	
 	arg := db.CreateAccountsParams{     
-		FirstName: req.FirstName,
-		LastName: req.LastName,
-		UserName: req.UserName,
+		FirstName: req.GetFirstName(),
+		LastName: req.GetLastName(),
+		Email: req.GetEmail(),
+		UserName: req.GetUserName(),
 		Password: hashPassword,
 	}
 
@@ -52,6 +53,10 @@ func validateCreateUserRequest(req *pb.CreateAccountRequest) (violations []*errd
 	if err := val.ValidateLastname(req.GetLastName()); err != nil {
 		violations = append(violations, fieldViolation("last_name", err))
   	}
+
+	if err := val.ValidateEmail(req.GetEmail()); err != nil {
+		violations = append(violations, fieldViolation("email", err))
+   	}
 
 	if err := val.ValidateUsername(req.GetUserName()); err != nil {
 		 violations = append(violations, fieldViolation("user_name", err))

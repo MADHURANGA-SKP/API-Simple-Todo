@@ -7,22 +7,25 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO account (
     first_name,
     last_name,
+    email,
     user_name,
     password
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, first_name, last_name, user_name, password
+    $1, $2, $3, $4, $5
+) RETURNING id, first_name, last_name, email, user_name, password
 `
 
 type CreateAccountParams struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
 	UserName  string `json:"user_name"`
 	Password  string `json:"password"`
 }
@@ -31,6 +34,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 	row := q.db.QueryRowContext(ctx, createAccount,
 		arg.FirstName,
 		arg.LastName,
+		arg.Email,
 		arg.UserName,
 		arg.Password,
 	)
@@ -39,6 +43,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.ID,
 		&i.FirstName,
 		&i.LastName,
+		&i.Email,
 		&i.UserName,
 		&i.Password,
 	)
@@ -56,7 +61,7 @@ func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
 }
 
 const getAccount = `-- name: GetAccount :one
-SELECT id, first_name, last_name, user_name, password FROM account
+SELECT id, first_name, last_name, email, user_name, password FROM account
 WHERE user_name = $1 LIMIT 1
 `
 
@@ -67,6 +72,7 @@ func (q *Queries) GetAccount(ctx context.Context, userName string) (Account, err
 		&i.ID,
 		&i.FirstName,
 		&i.LastName,
+		&i.Email,
 		&i.UserName,
 		&i.Password,
 	)
@@ -74,7 +80,7 @@ func (q *Queries) GetAccount(ctx context.Context, userName string) (Account, err
 }
 
 const listAccount = `-- name: ListAccount :many
-SELECT id, first_name, last_name, user_name, password FROM account
+SELECT id, first_name, last_name, email, user_name, password FROM account
 WHERE user_name = $1
 ORDER BY id
 LIMIT $1
@@ -99,6 +105,7 @@ func (q *Queries) ListAccount(ctx context.Context, arg ListAccountParams) ([]Acc
 			&i.ID,
 			&i.FirstName,
 			&i.LastName,
+			&i.Email,
 			&i.UserName,
 			&i.Password,
 		); err != nil {
@@ -117,32 +124,38 @@ func (q *Queries) ListAccount(ctx context.Context, arg ListAccountParams) ([]Acc
 
 const updateAccount = `-- name: UpdateAccount :one
 UPDATE account 
-SET first_name = $2, last_name = $3, user_name = $4, password = $5
-WHERE id = $1
-RETURNING id, first_name, last_name, user_name, password
+SET 
+    first_name = COALESCE($1,first_name),
+    last_name = COALESCE($2,last_name),
+    email = COALESCE($3,email),
+    password = COALESCE($4,password)
+WHERE 
+    user_name = $5
+RETURNING id, first_name, last_name, email, user_name, password
 `
 
 type UpdateAccountParams struct {
-	ID        int64  `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	UserName  string `json:"user_name"`
-	Password  string `json:"password"`
+	FirstName sql.NullString `json:"first_name"`
+	LastName  sql.NullString `json:"last_name"`
+	Email     sql.NullString `json:"email"`
+	Password  sql.NullString `json:"password"`
+	UserName  string         `json:"user_name"`
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, updateAccount,
-		arg.ID,
 		arg.FirstName,
 		arg.LastName,
-		arg.UserName,
+		arg.Email,
 		arg.Password,
+		arg.UserName,
 	)
 	var i Account
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
 		&i.LastName,
+		&i.Email,
 		&i.UserName,
 		&i.Password,
 	)

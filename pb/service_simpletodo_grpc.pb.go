@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Simpletodo_CreateAccount_FullMethodName = "/pb.Simpletodo/CreateAccount"
+	Simpletodo_UpdateAccount_FullMethodName = "/pb.Simpletodo/UpdateAccount"
 	Simpletodo_LoginAccount_FullMethodName  = "/pb.Simpletodo/LoginAccount"
 )
 
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SimpletodoClient interface {
 	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CreateAccountResult, error)
+	UpdateAccount(ctx context.Context, in *UpdateAccountRequest, opts ...grpc.CallOption) (*UpdateAccountResult, error)
 	LoginAccount(ctx context.Context, in *LoginAccountRequest, opts ...grpc.CallOption) (*LoginAccountResult, error)
 }
 
@@ -48,6 +50,15 @@ func (c *simpletodoClient) CreateAccount(ctx context.Context, in *CreateAccountR
 	return out, nil
 }
 
+func (c *simpletodoClient) UpdateAccount(ctx context.Context, in *UpdateAccountRequest, opts ...grpc.CallOption) (*UpdateAccountResult, error) {
+	out := new(UpdateAccountResult)
+	err := c.cc.Invoke(ctx, Simpletodo_UpdateAccount_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *simpletodoClient) LoginAccount(ctx context.Context, in *LoginAccountRequest, opts ...grpc.CallOption) (*LoginAccountResult, error) {
 	out := new(LoginAccountResult)
 	err := c.cc.Invoke(ctx, Simpletodo_LoginAccount_FullMethodName, in, out, opts...)
@@ -62,6 +73,7 @@ func (c *simpletodoClient) LoginAccount(ctx context.Context, in *LoginAccountReq
 // for forward compatibility
 type SimpletodoServer interface {
 	CreateAccount(context.Context, *CreateAccountRequest) (*CreateAccountResult, error)
+	UpdateAccount(context.Context, *UpdateAccountRequest) (*UpdateAccountResult, error)
 	LoginAccount(context.Context, *LoginAccountRequest) (*LoginAccountResult, error)
 	mustEmbedUnimplementedSimpletodoServer()
 }
@@ -72,6 +84,9 @@ type UnimplementedSimpletodoServer struct {
 
 func (UnimplementedSimpletodoServer) CreateAccount(context.Context, *CreateAccountRequest) (*CreateAccountResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAccount not implemented")
+}
+func (UnimplementedSimpletodoServer) UpdateAccount(context.Context, *UpdateAccountRequest) (*UpdateAccountResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAccount not implemented")
 }
 func (UnimplementedSimpletodoServer) LoginAccount(context.Context, *LoginAccountRequest) (*LoginAccountResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginAccount not implemented")
@@ -107,6 +122,24 @@ func _Simpletodo_CreateAccount_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Simpletodo_UpdateAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SimpletodoServer).UpdateAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Simpletodo_UpdateAccount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SimpletodoServer).UpdateAccount(ctx, req.(*UpdateAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Simpletodo_LoginAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginAccountRequest)
 	if err := dec(in); err != nil {
@@ -135,6 +168,10 @@ var Simpletodo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateAccount",
 			Handler:    _Simpletodo_CreateAccount_Handler,
+		},
+		{
+			MethodName: "UpdateAccount",
+			Handler:    _Simpletodo_UpdateAccount_Handler,
 		},
 		{
 			MethodName: "LoginAccount",
