@@ -153,7 +153,8 @@ func runGatwayServer(config util.Config, store db.Store){
 	}
 
 	log.Info().Msgf("Start http gateway server at %s", listener.Addr().String())
-	err = http.Serve(listener, mux)
+	handler := gapi.HttpLogger(mux)
+	err = http.Serve(listener, handler)
 	if err != nil {
 		log.Fatal().Msg("cannot start http gateway server:")
 	}
