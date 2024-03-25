@@ -2,10 +2,11 @@
 INSERT INTO account (
     first_name,
     last_name,
+    email,
     user_name,
     password
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetAccount :one
@@ -21,8 +22,13 @@ OFFSET $2;
 
 -- name: UpdateAccount :one
 UPDATE account 
-SET first_name = $2, last_name = $3, user_name = $4, password = $5
-WHERE id = $1
+SET 
+    first_name = COALESCE(sqlc.narg(first_name),first_name),
+    last_name = COALESCE(sqlc.narg(last_name),last_name),
+    email = COALESCE(sqlc.narg(email),email),
+    password = COALESCE(sqlc.narg(password),password)
+WHERE 
+    user_name = sqlc.arg(user_name)
 RETURNING *;
 
 -- name: DeleteAccount :exec

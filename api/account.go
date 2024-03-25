@@ -20,6 +20,7 @@ import (
 type createAccountRequest struct{
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
+	Email  string `json:"email" binding:"required"`
 	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
 	Password  string `json:"password" binding:"required"`
 }
@@ -27,8 +28,8 @@ type createAccountRequest struct{
 type AccountResult struct{
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
+	Email  string `json:"email" binding:"required"`
 	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
-	Password  string `json:"password" binding:"required"`
 	
 }
 
@@ -37,6 +38,7 @@ func newAccountResult(user db.Account) AccountResult {
 	return AccountResult{
 			FirstName: user.FirstName,
 			LastName: user.LastName,
+			Email: user.Email,
 			UserName: user.UserName,
 	}
 	
@@ -58,6 +60,7 @@ func (server *Server) CreateAccount(ctx *gin.Context){
 	arg := db.CreateAccountsParams{     
 		FirstName: req.FirstName,
 		LastName: req.LastName,
+		Email: req.Email,
 		UserName: req.UserName,
 		Password: hashPassword,
 	}

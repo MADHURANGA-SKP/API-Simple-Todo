@@ -170,10 +170,11 @@ func (store *Store) GetTodo(ctx context.Context, arg GetTodoParams)(GetTodoResul
 
 //CreateAccountTxParams contains the input parameters of the Createing of the data 
 type CreateAccountsParams struct{
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
-	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
-	Password  string `json:"password" binding:"required"`
+	FirstName string `json:"first_name"`
+    LastName  string `json:"last_name"`
+    Email     string `json:"email"`
+    UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
+    Password  string `json:"password" binding:"required"`
 }
 
 //CreateAccountResult contains the result of the Createing of the data
@@ -192,6 +193,7 @@ func (store *Store) CreateAccount(ctx context.Context, arg CreateAccountsParams)
 		result.Account, err = q.CreateAccount(ctx, CreateAccountParams{
 			FirstName: 		arg.FirstName,
 			LastName: 		arg.LastName,
+			Email: 			arg.Email,
 			UserName: 		arg.UserName,
 			Password: 		arg.Password,
 		});
@@ -251,10 +253,11 @@ func (store *Store) ListAccount(ctx context.Context, params ListAccountParams) (
 
 //UpdateAccountTxParams contains the input parameters of the Updating of the data 
 type UpdateAccountsParams struct{
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
-	UserName  string `json:"user_name" binding:"required,alphanum,min=8"`
-	Password  string `json:"password" binding:"required"`
+	FirstName sql.NullString `json:"first_name"`
+    LastName  sql.NullString `json:"last_name"`
+	Email     sql.NullString `json:"email"`
+    UserName  string `json:"user_name"`
+    Password  sql.NullString `json:"password"`
 }
 
 //UpdateTodoResult contains the result of the Updating of the data
@@ -274,8 +277,8 @@ func (store *Store) UpdateAccount(ctx context.Context, arg UpdateAccountsParams)
 		result.Account, err = q.UpdateAccount(ctx, UpdateAccountParams{
 			FirstName: 		arg.FirstName,
 			LastName: 		arg.LastName,
-			UserName: 		arg.UserName,
-			Password: 	arg.Password,
+			Email: 			arg.Email,
+			Password: 		arg.Password,
 		})
 
 		if err != nil {

@@ -2,6 +2,7 @@ package val
 
 import (
 	"fmt"
+	"net/mail"
 	"regexp"
 )
 
@@ -35,6 +36,16 @@ func ValidateLastname(value string) error {
 	}
 	if !isValidLastname(value) {
 		 return fmt.Errorf("must contain only letters or spaces")
+	}
+	return nil
+}
+
+func ValidateEmail(value string) error {
+	if err := ValidateString(value, 3, 200); err != nil {
+		return err
+	}
+	if _, err := mail.ParseAddress(value); err != nil {
+		return fmt.Errorf("is not a valid email address")
 	}
 	return nil
 }
