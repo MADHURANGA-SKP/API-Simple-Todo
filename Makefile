@@ -47,7 +47,10 @@ proto:
 rm_proto:
 	rm -f pb/*.go
 
+redis:
+	docker run --name redis -p 6379:6379 -d redis:alpine3.19
+
 server:
 	go run main.go
 
-.PHONY: postgres createdb create_migration_up_down dropdb migrateup migratedown db_docs db_schema sqlc test proto rm_proto server
+.PHONY: postgres createdb create_migration_up_down dropdb migrateup migratedown db_docs db_schema sqlc test proto rm_proto server redis
