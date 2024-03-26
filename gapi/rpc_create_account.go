@@ -6,7 +6,10 @@ import (
 	"simpletodo/pb"
 	util "simpletodo/util"
 	"simpletodo/val"
+	"simpletodo/worker"
+	"time"
 
+	"github.com/hibiken/asynq"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -35,8 +38,20 @@ func (server *Server) CreateAccount(ctx context.Context,req *pb.CreateAccountReq
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create user: %s", err)
 	}
+	taskPayload := &worker.PayloadSendVerifyEmail{
+		UserName: account.Account.UserName,
+	}
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(10*time.Second),
+		asynq.Queue("critical"),
+	}
+	err =  server.taskDistributor.DistributeTaskSendVerifyEmail(ctx,taskPayload, opts...)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to distribute task to send verifications")
+	}
 
-	
+
 	rsp := &pb.CreateAccountResult{
 		Account: convertAccount(account.Account),
 	}
