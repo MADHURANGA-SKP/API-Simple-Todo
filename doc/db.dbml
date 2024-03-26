@@ -1,12 +1,13 @@
 Project SimpleTodo {
-database_type: 'PostgreSQL'
-note: '''
-# simple_todo Database
-'''
+   database_type: 'PostgreSQL'
+   Note: '''
+   # simple_todo Database
+   '''
 }
 
 TABLE account as a {
 id bigserial [pk]
+role varchar [not null, default: "user"]
 first_name varchar [not null]
 last_name varchar [not null]
 email varchar [not null]

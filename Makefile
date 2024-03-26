@@ -1,3 +1,5 @@
+DB_URL = postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable
+
 postgres:
 	docker run -d --name simpletodo -p 5432:5432 -e POSTGRES_USER=pasan -e POSTGRES_PASSWORD=12345 postgres:16-alpine
 
@@ -11,11 +13,11 @@ dropdb:
 	docker exec -it simpletodo dropdb --username=pasan simpletodo
 
 migrateup:
-	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up
+	migrate -path db/migration -database "$(DB_URL)" -verbose up
 
 
 migratedown:
-	migrate -path db/migration -database "postgresql://pasan:12345@localhost:5432/simpletodo?sslmode=disable" -verbose up" -verbose down
+	migrate -path db/migration -database "$(DB_URL)" -verbose up" -verbose down
 
 
 new_migration: 
